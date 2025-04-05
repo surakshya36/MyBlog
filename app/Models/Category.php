@@ -4,16 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
-class posts extends Model
+class Category extends Model
 {
     use HasFactory;
-    protected $table = 'posts';
+    protected $table = 'categories';
     protected $fillable = [
         'name',
         'description',
         'created_by',
         'status',
+        
+        
     ];
     public function creator()
     {
