@@ -17,11 +17,9 @@ class CategoriesController extends Controller
      */
     public function index()
     {
-        // You're filtering by 'id' instead of 'created_by'
-        $data['rows'] = Category::with('creator')
-            ->where('created_by', Auth::id())  // Changed from where('id', ...)
-            ->get();
-    
+        // Get all categories with their creator information
+        $data['rows'] = Category::with('creator')->latest()->get();
+        
         return view('categories.index', compact('data'));
     }
 
@@ -74,21 +72,19 @@ class CategoriesController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        // Find the post by ID, but only if it belongs to the logged-in user
-        $category = Category::where('id', $id)->
-        with('creator')
-            ->where('id', Auth::id()) // Ensures the post belongs to the logged-in user
-            ->first();
+{
+    $category = Category::with('creator')
+                ->where('id', $id)
+                ->where('created_by', Auth::id()) // Correct ownership check
+                ->first();
 
-        // If the category is not found, redirect with an error message
-        if (!$category) {
-            return redirect()->route('categories.index')->with('error', 'category not found or unauthorized.');
-        }
-
-        // Return the view for showing the post details
-        return view('categories.show', compact('category'));
+    if (!$category) {
+        return redirect()->route('categories.index')
+               ->with('error', 'Category not found or unauthorized.');
     }
+
+    return view('categories.show', compact('category'));
+}
 
     /**
      * Show the form for editing the specified resource.
@@ -98,7 +94,13 @@ class CategoriesController extends Controller
      */
     public function edit($id)
     {
-        //
+        $category = Category::find($id);
+
+        if (!$category) {
+            return redirect()->route('categories.index')->with('error', 'category not found.');
+        }
+
+        return view('categories.edit', compact('category'));
     }
 
     /**
@@ -110,7 +112,26 @@ class CategoriesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        
+        $post = Category::find($id);
+
+        if (!$post) {
+            return redirect()->route('categories.index')->with('error', 'category not found.');
+        }
+
+        // Validate the request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'status' => 'required|in:0,1',
+        ]);
+
+        // Update the post
+        $post->update([
+            'title' => $request->name,
+            'status' => $request->status,
+        ]);
+
+        return redirect()->route('categories.index')->with('success', 'category updated successfully.');
     }
 
     /**
@@ -121,6 +142,12 @@ class CategoriesController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Category::find($id);
+
+        if (!$post) {
+            return redirect()->route('categories.index')->with('error', 'category not found.');
+        }
+        $post->delete();
+        return redirect()->route('categories.index')->with('success', 'category deleted successfully.');
     }
 }

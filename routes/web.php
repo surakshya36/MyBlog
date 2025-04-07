@@ -27,7 +27,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('categories', CategoriesController::class);
-
+    Route::resource('posts', PostsController::class);
 //Route for our posts
 Route::get('/posts', [PostsController::class, 'index'])->name('posts.index');
 Route::post('/posts', [PostsController::class, 'store'])->name('posts.store');
